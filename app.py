@@ -6,7 +6,7 @@ st.set_page_config(
     page_title="Dice Guesser Pro", page_icon="🎲", layout="centered"
 )
 
-# Custom Dark Theme Styling
+# Custom CSS: Forces side-by-side columns on mobile screens
 st.markdown(
     """
     <style>
@@ -34,6 +34,17 @@ st.markdown(
         color: #CDD6F4;
         font-size: 20px;
         text-align: center;
+    }
+    
+    /* MOBILE COLUMN FIX: Keeps metrics & buttons horizontal on small screens */
+    div[data-testid="column"] {
+        width: calc(25% - 1rem) !important;
+        flex: 1 1 calc(25% - 1rem) !important;
+        min-width: 0px !important;
+    }
+    div[data-testid="stHorizontalBlock"] {
+        flex-wrap: nowrap !important;
+        gap: 0.5rem !important;
     }
     </style>
 """,
@@ -158,7 +169,7 @@ with btn_col2:
 
 st.markdown("---")
 
-# STATS DISPLAYED BELOW INPUT
+# STATS DISPLAYED BELOW INPUT (FORCED SIDE-BY-SIDE ON MOBILE)
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Score", st.session_state.score)
 col2.metric("Attempts", st.session_state.attempts)
