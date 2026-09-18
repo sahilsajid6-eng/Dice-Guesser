@@ -27,8 +27,8 @@ selected_diff = st.selectbox(
 )
 current_max = difficulty_ranges[selected_diff]
 
-# Session State Initialization
-if "target" not in st.state_dict:
+# Session State Initializationg
+if "target" not in st.session_state:
     st.session_state.target = random.randint(1, current_max)
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -38,7 +38,6 @@ if "correct" not in st.session_state:
     st.session_state.correct = 0
 if "wrong" not in st.session_state:
     st.session_state.wrong = 0
-
 # Stat Display
 col1, col2 = st.columns(2)
 col1.metric("Score", st.session_state.score)
