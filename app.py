@@ -41,6 +41,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
 # Function to play sound using HTML5 Audio
 def play_audio(sound_type):
     sound_urls = {
@@ -62,20 +63,6 @@ difficulty_ranges = {"Easy (1-6)": 6, "Medium (1-12)": 12, "Hard (1-20)": 20}
 # Header Section
 st.title("🎲 Dice Guesser Pro")
 
-# 1. PROFILE / STATS EXPANDER AT THE TOP
-with st.expander("👤 Profile & Detailed Stats", expanded=False):
-    if "total_guesses" not in st.session_state:
-        st.session_state.total_guesses = 0
-    if "correct" not in st.session_state:
-        st.session_state.correct = 0
-    if "wrong" not in st.session_state:
-        st.session_state.wrong = 0
-
-    p_col1, p_col2, p_col3 = st.columns(3)
-    p_col1.metric("Total Guesses", st.session_state.total_guesses)
-    p_col2.metric("Correct Matches", st.session_state.correct)
-    p_col3.metric("Wrong Guesses", st.session_state.wrong)
-
 # Difficulty Selector
 selected_diff = st.selectbox(
     "Select Difficulty", list(difficulty_ranges.keys())
@@ -94,6 +81,29 @@ if "correct" not in st.session_state:
 if "wrong" not in st.session_state:
     st.session_state.wrong = 0
 
+
+# Reset Profile Function
+def reset_profile():
+    st.session_state.score = 0
+    st.session_state.total_guesses = 0
+    st.session_state.correct = 0
+    st.session_state.wrong = 0
+    st.session_state.target = random.randint(1, current_max)
+
+
+# PROFILE / STATS EXPANDER AT THE TOP (WITH RESET OPTION)
+with st.expander("👤 Profile & Detailed Stats", expanded=False):
+    p_col1, p_col2, p_col3 = st.columns(3)
+    p_col1.metric("Total Guesses", st.session_state.total_guesses)
+    p_col2.metric("Correct Matches", st.session_state.correct)
+    p_col3.metric("Wrong Guesses", st.session_state.wrong)
+
+    st.markdown("---")
+    if st.button("🔄 Reset Profile Stats", use_container_width=True):
+        reset_profile()
+        st.success("Profile stats reset successfully!")
+        st.rerun()
+
 dice_faces = {1: "⚀", 2: "⚁", 3: "⚂", 4: "⚃", 5: "⚄", 6: "⚅"}
 
 # Main Dice Icon Display
@@ -105,7 +115,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 2. INPUT AREA FIRST
+# INPUT AREA
 guess = st.number_input(
     f"Enter your guess (1-{current_max}):",
     min_value=1,
@@ -144,7 +154,7 @@ with btn_col2:
 
 st.markdown("---")
 
-# 3. SCORE & ACCURACY DISPLAYED BELOW GUESS
+# SCORE & ACCURACY DISPLAYED BELOW GUESS
 col1, col2 = st.columns(2)
 col1.metric("Score", st.session_state.score)
 
