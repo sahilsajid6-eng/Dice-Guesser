@@ -1,4 +1,5 @@
 import random
+import time
 import streamlit as st
 
 # Page Configuration
@@ -6,7 +7,7 @@ st.set_page_config(
     page_title="Dice Guesser Pro", page_icon="🎲", layout="centered"
 )
 
-# Custom CSS: Forces side-by-side columns on mobile screens
+# Custom Styling (Catppuccin Dark Theme & Mobile Responsiveness)
 st.markdown(
     """
     <style>
@@ -36,7 +37,7 @@ st.markdown(
         text-align: center;
     }
     
-    /* MOBILE COLUMN FIX: Keeps metrics & buttons horizontal on small screens */
+    /* MOBILE COLUMN FIX: Prevents responsive stacking */
     div[data-testid="column"] {
         width: calc(25% - 1rem) !important;
         flex: 1 1 calc(25% - 1rem) !important;
@@ -52,7 +53,7 @@ st.markdown(
 )
 
 
-# Function to play sound using HTML5 Audio
+# Play Audio Helper
 def play_audio(sound_type):
     sound_urls = {
         "roll": "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3",
@@ -67,19 +68,32 @@ def play_audio(sound_type):
         )
 
 
-# Difficulty Configuration
+# Dice Rolling Animation Helper
+def animate_dice_roll():
+    placeholder = st.empty()
+    dice_icons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
+    play_audio("roll")
+    for _ in range(8):
+        icon = random.choice(dice_icons)
+        placeholder.markdown(
+            f"<h1 style='text-align: center; font-size: 72px; color: #FAB387;'>{icon}</h1>",
+            unsafe_allow_html=True,
+        )
+        time.sleep(0.08)
+    placeholder.empty()
+
+
+# Game Options
 difficulty_ranges = {"Easy (1-6)": 6, "Medium (1-12)": 12, "Hard (1-20)": 20}
 
-# Header Section
 st.title("🎲 Dice Guesser Pro")
 
-# Difficulty Selector
 selected_diff = st.selectbox(
     "Select Difficulty", list(difficulty_ranges.keys())
 )
 current_max = difficulty_ranges[selected_diff]
 
-# Session State Initialization
+# Session State Setup
 if "target" not in st.session_state:
     st.session_state.target = random.randint(1, current_max)
 if "score" not in st.session_state:
@@ -94,7 +108,7 @@ if "wrong" not in st.session_state:
     st.session_state.wrong = 0
 
 
-# Reset Profile Function
+# Reset Stats Action
 def reset_profile():
     st.session_state.score = 0
     st.session_state.attempts = 0
@@ -104,7 +118,7 @@ def reset_profile():
     st.session_state.target = random.randint(1, current_max)
 
 
-# PROFILE OVERVIEW AT TOP
+# Top Profile Expander
 with st.expander("👤 Profile Overview", expanded=False):
     p_col1, p_col2 = st.columns(2)
     p_col1.metric("Total Guesses", st.session_state.total_guesses)
@@ -118,7 +132,7 @@ with st.expander("👤 Profile Overview", expanded=False):
 
 dice_faces = {1: "⚀", 2: "⚁", 3: "⚂", 4: "⚃", 5: "⚄", 6: "⚅"}
 
-# Display Target Dice Face
+# Main Display
 target_icon = dice_faces.get(
     st.session_state.target, str(st.session_state.target)
 )
@@ -127,7 +141,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# INPUT AREA
+# User Input
 guess = st.number_input(
     f"Enter your guess (1-{current_max}):",
     min_value=1,
@@ -140,6 +154,7 @@ btn_col1, btn_col2 = st.columns(2)
 
 with btn_col1:
     if st.button("Submit Guess", use_container_width=True):
+        animate_dice_roll()
         st.session_state.attempts += 1
         st.session_state.total_guesses += 1
 
@@ -162,14 +177,14 @@ with btn_col1:
 
 with btn_col2:
     if st.button("🎲 Roll New Dice", use_container_width=True):
-        play_audio("roll")
+        animate_dice_roll()
         st.session_state.target = random.randint(1, current_max)
         st.session_state.attempts = 0
         st.info(f"New target generated (1-{current_max})!")
 
 st.markdown("---")
 
-# STATS DISPLAYED BELOW INPUT (FORCED SIDE-BY-SIDE ON MOBILE)
+# Metrics Grid
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Score", st.session_state.score)
 col2.metric("Attempts", st.session_state.attempts)
