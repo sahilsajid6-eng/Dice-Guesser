@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="Dice Guesser Pro", page_icon="🎲", layout="centered"
 )
 
-# Custom Styling (Catppuccin Dark Theme & Mobile Responsiveness)
+# Custom Styling (Dark Theme & Compact Mobile Layout)
 st.markdown(
     """
     <style>
@@ -21,7 +21,7 @@ st.markdown(
         font-weight: bold;
         border-radius: 8px;
         border: none;
-        padding: 10px 20px;
+        padding: 8px 16px;
     }
     .stButton>button:hover {
         background-color: #F9E2AF;
@@ -29,23 +29,23 @@ st.markdown(
     }
     div[data-testid="stMetricValue"] {
         color: #89B4FA;
+        font-size: 22px !important;
+    }
+    div[data-testid="stMetricLabel"] {
+        font-size: 13px !important;
     }
     .stNumberInput input {
         background-color: #313244;
         color: #CDD6F4;
-        font-size: 20px;
+        font-size: 18px;
         text-align: center;
     }
     
-    /* MOBILE COLUMN FIX: Prevents responsive stacking */
-    div[data-testid="column"] {
-        width: calc(25% - 1rem) !important;
-        flex: 1 1 calc(25% - 1rem) !important;
-        min-width: 0px !important;
-    }
-    div[data-testid="stHorizontalBlock"] {
-        flex-wrap: nowrap !important;
-        gap: 0.5rem !important;
+    /* PREVENT HORIZONTAL OVERFLOW */
+    .main .block-container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        max-width: 100% !important;
     }
     </style>
 """,
@@ -53,7 +53,7 @@ st.markdown(
 )
 
 
-# Play Audio Helper
+# Helper Functions
 def play_audio(sound_type):
     sound_urls = {
         "roll": "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3",
@@ -68,22 +68,21 @@ def play_audio(sound_type):
         )
 
 
-# Dice Rolling Animation Helper
 def animate_dice_roll():
     placeholder = st.empty()
     dice_icons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"]
     play_audio("roll")
-    for _ in range(8):
+    for _ in range(6):
         icon = random.choice(dice_icons)
         placeholder.markdown(
-            f"<h1 style='text-align: center; font-size: 72px; color: #FAB387;'>{icon}</h1>",
+            f"<h1 style='text-align: center; font-size: 60px; color: #FAB387; margin:0;'>{icon}</h1>",
             unsafe_allow_html=True,
         )
-        time.sleep(0.08)
+        time.sleep(0.06)
     placeholder.empty()
 
 
-# Game Options
+# Game Config
 difficulty_ranges = {"Easy (1-6)": 6, "Medium (1-12)": 12, "Hard (1-20)": 20}
 
 st.title("🎲 Dice Guesser Pro")
@@ -93,7 +92,7 @@ selected_diff = st.selectbox(
 )
 current_max = difficulty_ranges[selected_diff]
 
-# Session State Setup
+# Session State Initialization
 if "target" not in st.session_state:
     st.session_state.target = random.randint(1, current_max)
 if "score" not in st.session_state:
@@ -108,7 +107,6 @@ if "wrong" not in st.session_state:
     st.session_state.wrong = 0
 
 
-# Reset Stats Action
 def reset_profile():
     st.session_state.score = 0
     st.session_state.attempts = 0
@@ -118,7 +116,7 @@ def reset_profile():
     st.session_state.target = random.randint(1, current_max)
 
 
-# Top Profile Expander
+# Profile Expander
 with st.expander("👤 Profile Overview", expanded=False):
     p_col1, p_col2 = st.columns(2)
     p_col1.metric("Total Guesses", st.session_state.total_guesses)
@@ -127,23 +125,22 @@ with st.expander("👤 Profile Overview", expanded=False):
     st.markdown("---")
     if st.button("🔄 Reset Profile Stats", use_container_width=True):
         reset_profile()
-        st.success("Profile stats reset successfully!")
+        st.success("Profile stats reset!")
         st.rerun()
 
 dice_faces = {1: "⚀", 2: "⚁", 3: "⚂", 4: "⚃", 5: "⚄", 6: "⚅"}
-
-# Main Display
 target_icon = dice_faces.get(
     st.session_state.target, str(st.session_state.target)
 )
+
 st.markdown(
-    f"<h1 style='text-align: center; font-size: 72px; color: #89B4FA;'>{target_icon}</h1>",
+    f"<h1 style='text-align: center; font-size: 64px; color: #89B4FA; margin:0;'>{target_icon}</h1>",
     unsafe_allow_html=True,
 )
 
-# User Input
+# Guess Input
 guess = st.number_input(
-    f"Enter your guess (1-{current_max}):",
+    f"Enter guess (1-{current_max}):",
     min_value=1,
     max_value=current_max,
     step=1,
@@ -163,36 +160,36 @@ with btn_col1:
             st.session_state.correct += 1
             play_audio("win")
             st.balloons()
-            st.success(
-                f"🎉 Correct! The target was {st.session_state.target}. A new target has been set!"
-            )
+            st.success(f"🎉 Correct! Target was {st.session_state.target}.")
             st.session_state.target = random.randint(1, current_max)
         else:
             st.session_state.wrong += 1
             play_audio("wrong")
             if guess > st.session_state.target:
-                st.warning(f"Too High! Target is smaller than {guess}.")
+                st.warning(f"Too High! Target < {guess}.")
             else:
-                st.warning(f"Too Low! Target is larger than {guess}.")
+                st.warning(f"Too Low! Target > {guess}.")
 
 with btn_col2:
-    if st.button("🎲 Roll New Dice", use_container_width=True):
+    if st.button("🎲 Roll New", use_container_width=True):
         animate_dice_roll()
         st.session_state.target = random.randint(1, current_max)
         st.session_state.attempts = 0
-        st.info(f"New target generated (1-{current_max})!")
+        st.info(f"New target set (1-{current_max})!")
 
 st.markdown("---")
 
-# Metrics Grid
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Score", st.session_state.score)
-col2.metric("Attempts", st.session_state.attempts)
-col3.metric("Wrong", st.session_state.wrong)
-
+# COMPACT 2x2 METRIC GRID FOR MOBILE FIT
 accuracy = (
     (st.session_state.correct / st.session_state.total_guesses * 100)
     if st.session_state.total_guesses > 0
     else 0.0
 )
-col4.metric("Accuracy", f"{accuracy:.1f}%")
+
+grid_row1_col1, grid_row1_col2 = st.columns(2)
+grid_row1_col1.metric("Score", st.session_state.score)
+grid_row1_col2.metric("Attempts", st.session_state.attempts)
+
+grid_row2_col1, grid_row2_col2 = st.columns(2)
+grid_row2_col1.metric("Wrong", st.session_state.wrong)
+grid_row2_col2.metric("Accuracy", f"{accuracy:.1f}%")
