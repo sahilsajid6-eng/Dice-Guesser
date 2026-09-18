@@ -1,4 +1,3 @@
-import base64
 import random
 import streamlit as st
 
@@ -7,7 +6,7 @@ st.set_page_config(
     page_title="Dice Guesser Pro", page_icon="🎲", layout="centered"
 )
 
-# Custom Styling (Catppuccin Dark Theme & Layout Improvements)
+# Custom Styling (Catppuccin Dark Theme)
 st.markdown(
     """
     <style>
@@ -74,6 +73,8 @@ if "target" not in st.session_state:
     st.session_state.target = random.randint(1, current_max)
 if "score" not in st.session_state:
     st.session_state.score = 0
+if "attempts" not in st.session_state:
+    st.session_state.attempts = 0
 if "total_guesses" not in st.session_state:
     st.session_state.total_guesses = 0
 if "correct" not in st.session_state:
@@ -85,18 +86,18 @@ if "wrong" not in st.session_state:
 # Reset Profile Function
 def reset_profile():
     st.session_state.score = 0
+    st.session_state.attempts = 0
     st.session_state.total_guesses = 0
     st.session_state.correct = 0
     st.session_state.wrong = 0
     st.session_state.target = random.randint(1, current_max)
 
 
-# PROFILE / STATS EXPANDER AT THE TOP (WITH RESET OPTION)
-with st.expander("👤 Profile & Detailed Stats", expanded=False):
-    p_col1, p_col2, p_col3 = st.columns(3)
+# PROFILE EXPANDER AT THE TOP
+with st.expander("👤 Profile Overview", expanded=False):
+    p_col1, p_col2 = st.columns(2)
     p_col1.metric("Total Guesses", st.session_state.total_guesses)
     p_col2.metric("Correct Matches", st.session_state.correct)
-    p_col3.metric("Wrong Guesses", st.session_state.wrong)
 
     st.markdown("---")
     if st.button("🔄 Reset Profile Stats", use_container_width=True):
@@ -128,6 +129,7 @@ btn_col1, btn_col2 = st.columns(2)
 
 with btn_col1:
     if st.button("Submit Guess", use_container_width=True):
+        st.session_state.attempts += 1
         st.session_state.total_guesses += 1
         if guess == st.session_state.target:
             st.session_state.score += 1
@@ -138,6 +140,7 @@ with btn_col1:
                 f"🎉 Correct! The target was {st.session_state.target}. New number generated!"
             )
             st.session_state.target = random.randint(1, current_max)
+            st.session_state.attempts = 0
         else:
             st.session_state.wrong += 1
             play_audio("wrong")
@@ -150,17 +153,20 @@ with btn_col2:
     if st.button("🎲 Roll New Dice", use_container_width=True):
         play_audio("roll")
         st.session_state.target = random.randint(1, current_max)
+        st.session_state.attempts = 0
         st.info(f"New target generated (1-{current_max})!")
 
 st.markdown("---")
 
-# SCORE & ACCURACY DISPLAYED BELOW GUESS
-col1, col2 = st.columns(2)
+# MAIN GAME STATS BELOW GUESS INPUT
+col1, col2, col3, col4 = st.columns(4)
 col1.metric("Score", st.session_state.score)
+col2.metric("Attempts", st.session_state.attempts)
+col3.metric("Wrong", st.session_state.wrong)
 
 accuracy = (
     (st.session_state.correct / st.session_state.total_guesses * 100)
     if st.session_state.total_guesses > 0
     else 0.0
 )
-col2.metric("Accuracy", f"{accuracy:.1f}%")
+col4.metric("Accuracy", f"{accuracy:.1f}%")
