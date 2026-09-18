@@ -6,7 +6,7 @@ st.set_page_config(
     page_title="Dice Guesser Pro", page_icon="🎲", layout="centered"
 )
 
-# Custom Styling (Catppuccin Dark Theme)
+# Custom Dark Theme Styling
 st.markdown(
     """
     <style>
@@ -93,7 +93,7 @@ def reset_profile():
     st.session_state.target = random.randint(1, current_max)
 
 
-# PROFILE EXPANDER AT THE TOP
+# PROFILE OVERVIEW AT TOP
 with st.expander("👤 Profile Overview", expanded=False):
     p_col1, p_col2 = st.columns(2)
     p_col1.metric("Total Guesses", st.session_state.total_guesses)
@@ -107,7 +107,7 @@ with st.expander("👤 Profile Overview", expanded=False):
 
 dice_faces = {1: "⚀", 2: "⚁", 3: "⚂", 4: "⚃", 5: "⚄", 6: "⚅"}
 
-# Main Dice Icon Display
+# Display Target Dice Face
 target_icon = dice_faces.get(
     st.session_state.target, str(st.session_state.target)
 )
@@ -131,16 +131,16 @@ with btn_col1:
     if st.button("Submit Guess", use_container_width=True):
         st.session_state.attempts += 1
         st.session_state.total_guesses += 1
+
         if guess == st.session_state.target:
             st.session_state.score += 1
             st.session_state.correct += 1
             play_audio("win")
             st.balloons()
             st.success(
-                f"🎉 Correct! The target was {st.session_state.target}. New number generated!"
+                f"🎉 Correct! The target was {st.session_state.target}. A new target has been set!"
             )
             st.session_state.target = random.randint(1, current_max)
-            st.session_state.attempts = 0
         else:
             st.session_state.wrong += 1
             play_audio("wrong")
@@ -158,7 +158,7 @@ with btn_col2:
 
 st.markdown("---")
 
-# MAIN GAME STATS BELOW GUESS INPUT
+# STATS DISPLAYED BELOW INPUT
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Score", st.session_state.score)
 col2.metric("Attempts", st.session_state.attempts)
